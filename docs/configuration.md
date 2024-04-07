@@ -491,8 +491,9 @@ followed by the normalized actual header name.
 #### [`PAPERLESS_LOGOUT_REDIRECT_URL=<str>`](#PAPERLESS_LOGOUT_REDIRECT_URL) {#PAPERLESS_LOGOUT_REDIRECT_URL}
 
 : URL to redirect the user to after a logout. This can be used
-together with PAPERLESS_ENABLE_HTTP_REMOTE_USER to
-redirect the user back to the SSO application's logout page.
+together with PAPERLESS_ENABLE_HTTP_REMOTE_USER and SSO to
+redirect the user back to the SSO application's logout page to
+complete the logout process.
 
     Defaults to None, which disables this feature.
 
@@ -1311,11 +1312,9 @@ assigns or creates tags if a properly formatted barcode is detected.
 
 #### [`PAPERLESS_AUDIT_LOG_ENABLED=<bool>`](#PAPERLESS_AUDIT_LOG_ENABLED) {#PAPERLESS_AUDIT_LOG_ENABLED}
 
-: Enables an audit trail for documents, document types, correspondents, and tags. Log entries can be viewed in the Django backend only.
+: Enables the audit trail for documents, document types, correspondents, and tags.
 
-    !!! warning
-
-        Once enabled cannot be disabled
+    Defaults to true.
 
 ## Collate Double-Sided Documents {#collate}
 
