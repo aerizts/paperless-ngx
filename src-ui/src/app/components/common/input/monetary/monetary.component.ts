@@ -35,7 +35,8 @@ export class MonetaryComponent extends AbstractInputComponent<string> {
 
   get currencyCode(): string {
     const focused = document.activeElement === this.currencyField?.nativeElement
-    if (focused && this.value) return this.value.match(/^([A-Z]{0,3})/)?.[0]
+    if (focused && this.value)
+      return this.value.toUpperCase().match(/^([A-Z]{0,3})/)?.[0]
     return (
       this.value
         ?.toString()
@@ -45,13 +46,13 @@ export class MonetaryComponent extends AbstractInputComponent<string> {
   }
 
   set currencyCode(value: string) {
-    this.value = value + this.monetaryValue?.toString()
+    this.value = value.toUpperCase() + this.monetaryValue?.toString()
   }
 
   get monetaryValue(): string {
     if (!this.value) return null
     const focused = document.activeElement === this.inputField?.nativeElement
-    const val = parseFloat(this.value.toString().replace(/[^0-9.,]+/g, ''))
+    const val = parseFloat(this.value.toString().replace(/[^0-9.,-]+/g, ''))
     return focused ? val.toString() : val.toFixed(2)
   }
 
