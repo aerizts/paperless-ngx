@@ -62,14 +62,14 @@
           <div class="list-group-item bg-transparent p-0 border-0 d-flex flex-wrap-reverse justify-content-between">
             <ng-template #dateTooltip>
               <div class="d-flex flex-column text-light">
-                <span i18n>Created: {{ document.created | customDate }}</span>
+                <span i18n>Created: {{ document.created_date | customDate }}</span>
                 <span i18n>Added: {{ document.added | customDate }}</span>
                 <span i18n>Modified: {{ document.modified | customDate }}</span>
               </div>
             </ng-template>
             <div class="ps-0 p-1" placement="top" [ngbTooltip]="dateTooltip">
               <i-bs width="1em" height="1em" class="me-2 text-muted" name="calendar-event"></i-bs>
-              <small>{{document.created | customDate:'mediumDate'}}</small>
+              <small>{{document.created_date | customDate:'mediumDate'}}</small>
             </div>
           </div>
         }
@@ -110,7 +110,7 @@
           @if (displayFields.includes(DisplayField.CUSTOM_FIELD + field.field)) {
             <div class="ps-0 p-1 d-flex align-items-center overflow-hidden">
               <i-bs width="1em" height="1em" class="me-2 text-muted" name="ui-radios"></i-bs>
-              <small><pngx-custom-field-display [document]="document" [fieldId]="field.field"></pngx-custom-field-display></small>
+              <small><pngx-custom-field-display [document]="document" [fieldId]="field.field" showNameIfEmpty="true"></pngx-custom-field-display></small>
             </div>
           }
         }

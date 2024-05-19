@@ -5,7 +5,6 @@ import zoneinfo
 from decimal import Decimal
 
 import magic
-from auditlog.context import set_actor
 from celery import states
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -27,6 +26,9 @@ from guardian.utils import get_user_obj_perms_model
 from rest_framework import fields
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
+
+if settings.AUDIT_LOG_ENABLED:
+    from auditlog.context import set_actor
 
 from documents import bulk_edit
 from documents.data_models import DocumentSource
@@ -91,7 +93,9 @@ class MatchingModelSerializer(serializers.ModelSerializer):
         owner = (
             data["owner"]
             if "owner" in data
-            else self.user if hasattr(self, "user") else None
+            else self.user
+            if hasattr(self, "user")
+            else None
         )
         pk = self.instance.pk if hasattr(self.instance, "pk") else None
         if ("name" in data or "owner" in data) and self.Meta.model.objects.filter(
@@ -547,7 +551,7 @@ class CustomFieldInstanceSerializer(serializers.ModelSerializer):
                 except Exception:
                     # If that fails, try to validate as a monetary string
                     RegexValidator(
-                        regex=r"^[A-Z]{3}-?\d+(\.\d{2,2})$",
+                        regex=r"^[A-Z]{3}-?\d+(\.\d{1,2})$",
                         message="Must be a two-decimal number with optional currency code e.g. GBP123.45",
                     )(data["value"])
             elif field.data_type == CustomField.FieldDataType.STRING:

@@ -33,19 +33,19 @@
                                 @if (change.value["type"] === 'm2m') {
                                     <li>
                                         <span class="fst-italic" i18n>{{ change.value["operation"] | titlecase }}</span>&nbsp;
-                                        <span class="text-light">{{ change.key | titlecase }}</span>:&nbsp;
+                                        <span>{{ change.key | titlecase }}</span>:&nbsp;
                                         <code class="text-primary">{{ change.value["objects"].join(', ') }}</code>
                                     </li>
                                 }
                                 @else if (change.value["type"] === 'custom_field') {
                                     <li>
-                                        <span class="text-light">{{ change.value["field"] }}</span>:&nbsp;
+                                        <span>{{ change.value["field"] }}</span>:&nbsp;
                                         <code class="text-primary">{{ change.value["value"] }}</code>
                                     </li>
                                 }
                                 @else {
                                     <li>
-                                        <span class="text-light">{{ change.key | titlecase }}</span>:&nbsp;
+                                        <span>{{ change.key | titlecase }}</span>:&nbsp;
                                         <code class="text-primary">{{ change.value[1] }}</code>
                                     </li>
                                 }

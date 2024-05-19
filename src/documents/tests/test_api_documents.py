@@ -423,16 +423,18 @@ class TestDocumentApi(DirectoriesMixin, DocumentConsumeDelayMixin, APITestCase):
     def test_document_history_insufficient_perms(self):
         """
         GIVEN:
-            - Audit log is disabled
+            - Audit log is enabled
         WHEN:
-            - Document is updated
-            - Audit log is requested
+            - History is requested without auditlog permissions
+            - Or is requested as superuser on document with another owner
         THEN:
-            - Audit log returns HTTP 400 Bad Request
+            - History endpoint returns HTTP 403 Forbidden
+            - History is returned
         """
+        # No auditlog permissions
         user = User.objects.create_user(username="test")
         user.user_permissions.add(*Permission.objects.filter(codename="view_document"))
-        self.client.force_login(user=user)
+        self.client.force_authenticate(user=user)
         doc = Document.objects.create(
             title="First title",
             checksum="123",
@@ -442,6 +444,19 @@ class TestDocumentApi(DirectoriesMixin, DocumentConsumeDelayMixin, APITestCase):
 
         response = self.client.get(f"/api/documents/{doc.pk}/history/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # superuser
+        user.is_superuser = True
+        user.save()
+        user2 = User.objects.create_user(username="test2")
+        doc2 = Document.objects.create(
+            title="Second title",
+            checksum="456",
+            mime_type="application/pdf",
+            owner=user2,
+        )
+        response = self.client.get(f"/api/documents/{doc2.pk}/history/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_document_filters(self):
         doc1 = Document.objects.create(
@@ -914,6 +929,45 @@ class TestDocumentApi(DirectoriesMixin, DocumentConsumeDelayMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["documents_inbox"], None)
         self.assertEqual(response.data["inbox_tag"], None)
+
+    def test_statistics_multiple_users(self):
+        """
+        GIVEN:
+            - Inbox tags with different owners and documents that are accessible to different users
+        WHEN:
+            - Statistics are requested
+        THEN:
+            - Statistics only include inbox counts for tags accessible by the user
+        """
+        u1 = User.objects.create_user("user1")
+        u2 = User.objects.create_user("user2")
+        inbox_tag_u1 = Tag.objects.create(name="inbox_u1", is_inbox_tag=True, owner=u1)
+        Tag.objects.create(name="inbox_u2", is_inbox_tag=True, owner=u2)
+        doc_u1 = Document.objects.create(
+            title="none1",
+            checksum="A",
+            mime_type="application/pdf",
+            owner=u1,
+        )
+        doc2_u1 = Document.objects.create(
+            title="none2",
+            checksum="B",
+            mime_type="application/pdf",
+        )
+        doc_u1.tags.add(inbox_tag_u1)
+        doc2_u1.save()
+        doc2_u1.tags.add(inbox_tag_u1)
+        doc2_u1.save()
+
+        self.client.force_authenticate(user=u1)
+        response = self.client.get("/api/statistics/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["documents_inbox"], 2)
+
+        self.client.force_authenticate(user=u2)
+        response = self.client.get("/api/statistics/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["documents_inbox"], 0)
 
     def test_upload(self):
         self.consume_file_mock.return_value = celery.result.AsyncResult(
